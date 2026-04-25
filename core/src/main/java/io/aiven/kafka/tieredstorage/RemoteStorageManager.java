@@ -21,8 +21,10 @@ import java.io.InputStream;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.ServiceLoader;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.kafka.common.config.ConfigException;
 import org.apache.kafka.common.metrics.MetricConfig;
 import org.apache.kafka.common.metrics.Sensor;
 import org.apache.kafka.common.utils.Time;
@@ -49,7 +51,7 @@ public class RemoteStorageManager implements org.apache.kafka.server.log.remote.
     private static final Logger log = LoggerFactory.getLogger(RemoteStorageManager.class);
 
     private KafkaRemoteStorageManager kafkaRsm;
-    private IcebergRemoteStorageManager icebergRsm;
+    private InternalRemoteStorageManager icebergRsm;
     private InternalRemoteStorageManagerSelector irsmSelector;
 
     private final Time time;
@@ -86,7 +88,7 @@ public class RemoteStorageManager implements org.apache.kafka.server.log.remote.
 
         this.kafkaRsm = new KafkaRemoteStorageManager(log, time, config);
         this.icebergRsm = segmentFormat == SegmentFormat.ICEBERG
-            ? new IcebergRemoteStorageManager(log, time, config)
+            ? loadIcebergManager(log, time, configs)
             : null;
         this.irsmSelector = new InternalRemoteStorageManagerSelector(segmentFormat, kafkaRsm, icebergRsm);
     }
@@ -185,6 +187,15 @@ public class RemoteStorageManager implements org.apache.kafka.server.log.remote.
         }
 
         log.info("Deleting log segment data for completed successfully {}", remoteLogSegmentMetadata);
+    }
+
+    private static InternalRemoteStorageManager loadIcebergManager(
+            final Logger log, final Time time, final Map<String, ?> configs) {
+        return ServiceLoader.load(IcebergManagerFactory.class)
+            .findFirst()
+            .orElseThrow(() -> new ConfigException(
+                "segment.format=iceberg is configured but the iceberg module is not on the classpath"))
+            .create(log, time, configs);
     }
 
     @Override

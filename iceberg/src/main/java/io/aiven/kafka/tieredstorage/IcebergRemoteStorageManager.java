@@ -44,6 +44,7 @@ import org.apache.kafka.storage.internals.log.LogSegment;
 import org.apache.kafka.storage.internals.log.OffsetIndex;
 
 import io.aiven.kafka.tieredstorage.config.RemoteStorageManagerConfig;
+import io.aiven.kafka.tieredstorage.iceberg.IcebergRemoteStorageManagerConfig;
 import io.aiven.kafka.tieredstorage.iceberg.BatchEnumeration;
 import io.aiven.kafka.tieredstorage.iceberg.IcebergTableManager;
 import io.aiven.kafka.tieredstorage.iceberg.MultiFileReader;
@@ -93,17 +94,19 @@ public class IcebergRemoteStorageManager extends InternalRemoteStorageManager {
     private final Namespace icebergNamespace;
     private final StructureProvider structureProvider;
 
-    IcebergRemoteStorageManager(final Logger log, final Time time,
-                                final RemoteStorageManagerConfig config) {
-        super(log, time, config);
+    IcebergRemoteStorageManager(final Logger log, final Time time, final Map<String, ?> configs) {
+        super(log, time, new RemoteStorageManagerConfig(configs));
+        final var config = new RemoteStorageManagerConfig(configs);
+        final var icebergConfig = new IcebergRemoteStorageManagerConfig(configs);
+
         this.customMetadataFields = config.customMetadataKeysIncluded();
         this.customMetadataSerde = new SegmentCustomMetadataSerde();
 
         this.objectKeyFactory = new ObjectKeyFactory(config.keyPrefix(), config.keyPrefixMask());
-        this.catalog = config.icebergCatalog();
-        this.structureProvider = config.structureProvider();
+        this.catalog = icebergConfig.icebergCatalog();
+        this.structureProvider = icebergConfig.structureProvider();
         this.icebergTableManager = new IcebergTableManager(catalog);
-        this.icebergNamespace = config.icebergNamespace();
+        this.icebergNamespace = icebergConfig.icebergNamespace();
         LOG.info("IcebergRemoteStorageManager initialized successfully");
     }
 

@@ -408,6 +408,7 @@ tasks.register('validateDependencies') {
 def modulesToPublish = [
         ':commons',
         ':core',
+        ':iceberg',
         ':storage:core',
         ':storage:filesystem',
         ':storage:s3',

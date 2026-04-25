@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Aiven Oy
+ * Copyright 2025 Aiven Oy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,16 +14,17 @@
  * limitations under the License.
  */
 
-rootProject.name = 'tiered-storage-for-apache-kafka'
-include 'core'
-include 'iceberg'
-include 'storage'
-include 'storage:core'
-include 'storage:filesystem'
-include 'storage:azure'
-include 'storage:gcs'
-include 'storage:s3'
-include 'e2e'
-include 'commons'
-include 'docs'
-include 'benchmarks'
+package io.aiven.kafka.tieredstorage;
+
+import java.util.Map;
+
+import org.apache.kafka.common.utils.Time;
+
+import org.slf4j.Logger;
+
+public class DefaultIcebergManagerFactory implements IcebergManagerFactory {
+    @Override
+    public InternalRemoteStorageManager create(final Logger log, final Time time, final Map<String, ?> configs) {
+        return new IcebergRemoteStorageManager(log, time, configs);
+    }
+}

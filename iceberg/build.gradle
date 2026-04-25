@@ -1,0 +1,85 @@
+/*
+ * Copyright 2025 Aiven Oy
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+plugins {
+    id 'java-library'
+}
+
+archivesBaseName = "iceberg"
+
+ext {
+    icebergVersion = "1.10.1"
+
+    parquetVersion = "1.15.2"
+
+    hadoopVersion = "3.4.1"
+}
+
+dependencies {
+    implementation project(":core")
+
+    compileOnly "org.apache.kafka:kafka-storage:$kafkaVersion"
+
+    implementation("io.confluent:kafka-avro-serializer:8.2.0") {
+        exclude group: "org.slf4j"
+        exclude group: 'org.apache.kafka', module: 'kafka-clients'
+        exclude group: 'com.fasterxml.jackson.core', module: 'jackson-databind'
+        exclude group: 'com.fasterxml.jackson.core', module: 'jackson-annotations'
+        exclude group: 'com.fasterxml.jackson.core', module: 'jackson-core'
+        exclude group: 'com.fasterxml.jackson.core', module: 'jackson-bom'
+    }
+
+    implementation "org.apache.iceberg:iceberg-api:$icebergVersion"
+    implementation "org.apache.iceberg:iceberg-core:$icebergVersion"
+    implementation "org.apache.iceberg:iceberg-data:$icebergVersion"
+    implementation "org.apache.iceberg:iceberg-aws:$icebergVersion"
+    implementation "org.apache.iceberg:iceberg-parquet:$icebergVersion"
+
+    implementation("org.apache.parquet:parquet-column:$parquetVersion") {
+        exclude group: 'org.slf4j'
+    }
+
+    implementation("org.apache.hadoop:hadoop-common:$hadoopVersion") {
+        exclude group: 'log4j'
+        exclude group: 'org.slf4j'
+        exclude group: 'ch.qos.reload4j'
+        exclude group: 'org.apache.avro', module: 'avro'
+        exclude group: 'com.google.guava'
+        exclude group: 'com.google.protobuf'
+        exclude group: 'org.apache.curator'
+        exclude group: 'org.apache.zookeeper'
+        exclude group: 'org.apache.kerby'
+        exclude group: 'org.apache.hadoop', module: 'hadoop-auth'
+        exclude group: 'org.apache.commons', module: 'commons-configuration2'
+        exclude group: 'org.apache.hadoop.thirdparty', module: 'hadoop-shaded-protobuf_3_7'
+        exclude group: 'org.eclipse.jetty'
+        exclude group: "io.netty"
+    }
+
+    implementation("org.apache.hadoop:hadoop-mapreduce-client-core:$hadoopVersion") {
+        exclude group: 'org.apache.avro'
+        exclude group: 'org.slf4j'
+        exclude group: "io.netty"
+        exclude group: "org.jline"
+        exclude group: "commons-cli"
+        exclude group: 'ch.qos.reload4j'
+        exclude group: "org.apache.hadoop", module: "hdfs-client"
+        exclude group: "org.eclipse.jetty"
+        exclude group: "org.eclipse.jetty.websocket"
+    }
+
+    testImplementation(testFixtures(project(":storage:core")))
+}
